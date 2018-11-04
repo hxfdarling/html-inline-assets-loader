@@ -1,0 +1,32 @@
+{
+  "name": "html-inline-assets-loader",
+  "version": "1.0.0",
+  "description": "resolve assets in html file",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hxfdarling/html-inline-assets-loader.git"
+  },
+  "author": "zman",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hxfdarling/html-inline-assets-loader/issues"
+  },
+  "homepage": "https://github.com/hxfdarling/html-inline-assets-loader#readme",
+  "dependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "fastparse": "^1.1.2",
+    "loader-utils": "^1.1.0",
+    "query-parse": "^2.0.0"
+  },
+  "devDependencies": {
+    "eslint-config-zman": "0.0.9"
+  }
+}
