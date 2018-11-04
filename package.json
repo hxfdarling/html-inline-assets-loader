@@ -1,6 +1,6 @@
 {
   "name": "html-inline-assets-loader",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "resolve assets in html file",
   "main": "index.js",
   "directories": {
