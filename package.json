@@ -27,6 +27,20 @@
     "query-parse": "^2.0.0"
   },
   "devDependencies": {
+    "commitlint-config-imt": "0.0.1",
     "eslint-config-zman": "0.0.9"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    },
+    "cz-customizable": {
+      "config": "node_modules/commitlint-config-imt/cz-config.js"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
   }
 }
