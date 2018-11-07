@@ -69,7 +69,7 @@ module.exports = async function(content) {
           code = `<style type="text/css" >${buffer}</style>`;
         } else {
           this.emitWarning(`only js/css support inline:${JSON.stringify(tag, null, 2)}`);
-          code = `<${name} ${attrs.map(i => `${i.name}=${i.value}`).join(' ')}/>`;
+          code = `<${name} ${attrs.map(i => `${i.name}="${i.value}"`).join(' ')}/>`;
         }
       } else {
         if (tag.name === SCRIPT) {
@@ -79,7 +79,8 @@ module.exports = async function(content) {
         Hash.update(buffer);
         const hash = Hash.digest('hex').substr(0, 6);
         const newFileName = `${path.basename(file).split('.')[0]}_${hash}${path.extname(file)}`;
-        const newUrl = path.join(publicPath, newFileName);
+
+        const newUrl = [publicPath, newFileName].join('');
 
         this.emitFile(newFileName, buffer);
 
@@ -88,9 +89,9 @@ module.exports = async function(content) {
             if (isLink(i)) {
               i.value = newUrl;
             }
-            return `${i.name}=${i.value}`;
+            return `${i.name}="${i.value}"`;
           })
-          .join(' ')}}/>`;
+          .join(' ')} />`;
       }
       tag.code = code;
     })
