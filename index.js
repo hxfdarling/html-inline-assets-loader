@@ -19,7 +19,7 @@ module.exports = async function(content) {
   const babelOptions = {
     minified: process.env.NODE_ENV !== 'development',
     // TODO: 支持.babelrc文件中读取配置
-    presets: [require.resolve('babel-preset-imt')],
+    presets: [require.resolve('@babel/preset-env')],
   };
   const { resource } = this;
 
