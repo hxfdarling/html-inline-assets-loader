@@ -20,7 +20,6 @@
   },
   "homepage": "https://github.com/hxfdarling/html-inline-assets-loader#readme",
   "dependencies": {
-    "@babel/preset-env": "^7.1.5",
     "fastparse": "^1.1.2",
     "fs-extra": "^7.0.0",
     "loader-utils": "^1.1.0",

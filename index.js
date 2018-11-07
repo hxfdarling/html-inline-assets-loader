@@ -1,3 +1,5 @@
+/* eslint-disable global-require */
+
 const fs = require('fs-extra');
 const path = require('path');
 const loaderUtils = require('loader-utils');
@@ -12,14 +14,26 @@ const { SCRIPT } = require('./lib/const');
 module.exports = async function(content) {
   this.cacheable && this.cacheable();
   const callback = this.async();
-
+  const options = loaderUtils.getOptions(this) || {};
   const webpackConfig = this._compiler.parentCompilation.options;
   const { publicPath } = webpackConfig.output;
 
   const babelOptions = {
-    minified: process.env.NODE_ENV !== 'development',
-    // TODO: 支持.babelrc文件中读取配置
-    presets: [require.resolve('@babel/preset-env')],
+    minified: options.minimize,
+    presets: [
+      [
+        require('@babel/preset-env').default,
+        {
+          // no longer works with IE 9
+          targets: {
+            ie: 9,
+          },
+          // Users cannot override this behavior because this Babel
+          // configuration is highly tuned for ES5 support
+          ignoreBrowserslistConfig: true,
+        },
+      ],
+    ],
   };
   const { resource } = this;
 
