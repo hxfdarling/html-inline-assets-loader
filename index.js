@@ -43,7 +43,7 @@ module.exports = async function(content) {
       });
 
       const file = path.resolve(dir, temp[0]);
-      let buffer = fs.readFile(file);
+      let buffer = await fs.readFile(file);
       let code = '';
 
       const { name, attrs } = tag;
