@@ -57,23 +57,30 @@ module.exports = async function(content) {
       });
 
       const file = path.resolve(dir, temp[0]);
-      let buffer = await fs.readFile(file);
-      let code = '';
-
+      const buffer = await fs.readFile(file);
+      let result = '';
+      const isMiniFile = /\.min\.js$/.test(file);
+      const getJSCode = () => {
+        if (isMiniFile) {
+          return buffer.toString();
+        }
+        return transform(buffer, babelOptions).code;
+      };
       const { name, attrs } = tag;
       // only js/css support inline
       if (query._inline) {
         if (name === SCRIPT) {
-          code = `<script>${transform(buffer, babelOptions).code}</script>`;
+          result = getJSCode();
+          result = `<script>${result}</script>`;
         } else if (isStyle(tag)) {
-          code = `<style type="text/css" >${buffer}</style>`;
+          result = `<style type="text/css" >${buffer}</style>`;
         } else {
           this.emitWarning(`only js/css support inline:${JSON.stringify(tag, null, 2)}`);
-          code = `<${name} ${attrs.map(i => `${i.name}="${i.value}"`).join(' ')}/>`;
+          result = `<${name} ${attrs.map(i => `${i.name}="${i.value}"`).join(' ')}/>`;
         }
       } else {
         if (tag.name === SCRIPT) {
-          buffer = transform(buffer, babelOptions).code;
+          result = getJSCode();
         }
         const Hash = crypto.createHash('md5');
         Hash.update(buffer);
@@ -84,7 +91,7 @@ module.exports = async function(content) {
 
         this.emitFile(newFileName, buffer);
 
-        code = `<${name} ${attrs
+        result = `<${name} ${attrs
           .map(i => {
             if (isLink(i)) {
               i.value = newUrl;
@@ -93,7 +100,7 @@ module.exports = async function(content) {
           })
           .join(' ')} />`;
       }
-      tag.code = code;
+      tag.code = result;
     })
   );
 
