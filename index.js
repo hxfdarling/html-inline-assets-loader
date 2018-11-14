@@ -98,7 +98,7 @@ module.exports = async function(content) {
             }
             return `${i.name}="${i.value}"`;
           })
-          .join(' ')} />`;
+          .join(' ')} ></${name}>`;
       }
       tag.code = result;
     })
