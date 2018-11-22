@@ -57,50 +57,56 @@ module.exports = async function(content) {
       });
 
       const file = path.resolve(dir, temp[0]);
-      const buffer = await fs.readFile(file);
-      let result = '';
-      const isMiniFile = /\.min\.js$/.test(file);
-      const getJSCode = () => {
-        if (isMiniFile) {
-          return buffer.toString();
-        }
-        return transform(buffer, babelOptions).code;
-      };
-      const { name, attrs } = tag;
-      // only js/css support inline
-      if (query._inline) {
-        if (name === SCRIPT) {
-          result = getJSCode();
-          result = `<script>${result}</script>`;
-        } else if (isStyle(tag)) {
-          result = `<style type="text/css" >${buffer}</style>`;
-        } else {
-          this.emitWarning(`only js/css support inline:${JSON.stringify(tag, null, 2)}`);
-          result = `<${name} ${attrs.map(i => `${i.name}="${i.value}"`).join(' ')}/>`;
-        }
+      if (!fs.existsSync(file)) {
+        this.emitError(new Error(`not found file: ${temp[0]} \nin ${resource}`));
+        tag.code = '';
       } else {
-        if (tag.name === SCRIPT) {
-          result = getJSCode();
+        this.addDependency(file);
+        const buffer = await fs.readFile(file);
+        let result = '';
+        const isMiniFile = /\.min\.js$/.test(file);
+        const getJSCode = () => {
+          if (isMiniFile) {
+            return buffer.toString();
+          }
+          return transform(buffer, babelOptions).code;
+        };
+        const { name, attrs } = tag;
+        // only js/css support inline
+        if (query._inline) {
+          if (name === SCRIPT) {
+            result = getJSCode();
+            result = `<script>${result}</script>`;
+          } else if (isStyle(tag)) {
+            result = `<style type="text/css" >${buffer}</style>`;
+          } else {
+            this.emitWarning(`only js/css support inline:${JSON.stringify(tag, null, 2)}`);
+            result = `<${name} ${attrs.map(i => `${i.name}="${i.value}"`).join(' ')}/>`;
+          }
+        } else {
+          if (tag.name === SCRIPT) {
+            result = getJSCode();
+          }
+          const Hash = crypto.createHash('md5');
+          Hash.update(buffer);
+          const hash = Hash.digest('hex').substr(0, 6);
+          const newFileName = `${path.basename(file).split('.')[0]}_${hash}${path.extname(file)}`;
+
+          const newUrl = [publicPath, newFileName].join('');
+
+          this.emitFile(newFileName, buffer);
+
+          result = `<${name} ${attrs
+            .map(i => {
+              if (isLink(i)) {
+                i.value = newUrl;
+              }
+              return `${i.name}="${i.value}"`;
+            })
+            .join(' ')} ></${name}>`;
         }
-        const Hash = crypto.createHash('md5');
-        Hash.update(buffer);
-        const hash = Hash.digest('hex').substr(0, 6);
-        const newFileName = `${path.basename(file).split('.')[0]}_${hash}${path.extname(file)}`;
-
-        const newUrl = [publicPath, newFileName].join('');
-
-        this.emitFile(newFileName, buffer);
-
-        result = `<${name} ${attrs
-          .map(i => {
-            if (isLink(i)) {
-              i.value = newUrl;
-            }
-            return `${i.name}="${i.value}"`;
-          })
-          .join(' ')} ></${name}>`;
+        tag.code = result;
       }
-      tag.code = result;
     })
   );
 
