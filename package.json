@@ -7,6 +7,7 @@
     "lib": "lib"
   },
   "scripts": {
+    "release": "standard-version",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,13 +22,14 @@
   "homepage": "https://github.com/hxfdarling/html-inline-assets-loader#readme",
   "dependencies": {
     "fastparse": "^1.1.2",
-    "fs-extra": "^7.0.0",
+    "fs-extra": "^7.0.1",
     "loader-utils": "^1.1.0",
     "query-parse": "^2.0.0"
   },
   "devDependencies": {
-    "commitlint-config-imt": "0.0.2",
-    "eslint-config-zman": "0.0.9"
+    "commitlint-config-imt": "^0.0.4",
+    "eslint-config-zman": "^0.0.9",
+    "standard-version": "^4.4.0"
   },
   "config": {
     "commitizen": {
