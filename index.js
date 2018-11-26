@@ -37,59 +37,61 @@ module.exports = async function(content) {
           query[key] = true;
         }
       });
-
       const file = path.resolve(dir, temp[0]);
       if (!fs.existsSync(file)) {
         this.emitError(new Error(`not found file: ${temp[0]} \nin ${resource}`));
         tag.code = '';
       } else {
-        const isMiniFile = /\.min\.(js|css)$/.test(file);
-        const { name, attrs } = tag;
-        this.addDependency(file);
+        const { _inline: inline, _dist: dist } = query;
         let result = '';
-        if (isMiniFile || isStyle(tag)) {
-          result = (await fs.readFile(file)).toString();
-        } else if (name === SCRIPT) {
-          // css 不支持，因为mini-css-extra-plugin/loader会出错！
-          result = await new Promise((resolve, reject) => {
-            this.loadModule(file, (err, source) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve(source);
-              }
+        const needInclude = !dist || (dist && process.env.NODE_ENV === 'production');
+        if (needInclude) {
+          const isMiniFile = /\.min\.(js|css)$/.test(file);
+          const { name, attrs } = tag;
+          this.addDependency(file);
+          if (isMiniFile || isStyle(tag)) {
+            result = (await fs.readFile(file)).toString();
+          } else if (name === SCRIPT) {
+            // css 不支持，因为mini-css-extra-plugin/loader会出错！
+            result = await new Promise((resolve, reject) => {
+              this.loadModule(file, (err, source) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(source);
+                }
+              });
             });
-          });
-        }
-
-        // only js/css support inline
-        if (query._inline) {
-          if (name === SCRIPT) {
-            result = `<script>${result}</script>`;
-          } else if (isStyle(tag)) {
-            result = `<style type="text/css" >${result}</style>`;
-          } else {
-            this.emitWarning(`only js/css support inline:${JSON.stringify(tag, null, 2)}`);
-            result = `<${name} ${attrs.map(i => `${i.name}="${i.value}"`).join(' ')}/>`;
           }
-        } else {
-          const Hash = crypto.createHash('md5');
-          Hash.update(result);
-          const hash = Hash.digest('hex').substr(0, 6);
-          const newFileName = `${path.basename(file).split('.')[0]}_${hash}${path.extname(file)}`;
+          // only js/css support inline
+          if (inline) {
+            if (name === SCRIPT) {
+              result = `<script>${result}</script>`;
+            } else if (isStyle(tag)) {
+              result = `<style type="text/css" >${result}</style>`;
+            } else {
+              this.emitWarning(`only js/css support inline:${JSON.stringify(tag, null, 2)}`);
+              result = `<${name} ${attrs.map(i => `${i.name}="${i.value}"`).join(' ')}/>`;
+            }
+          } else {
+            const Hash = crypto.createHash('md5');
+            Hash.update(result);
+            const hash = Hash.digest('hex').substr(0, 6);
+            const newFileName = `${path.basename(file).split('.')[0]}_${hash}${path.extname(file)}`;
 
-          const newUrl = [publicPath.replace(/\/$/, ''), newFileName].join(publicPath ? '/' : '');
+            const newUrl = [publicPath.replace(/\/$/, ''), newFileName].join(publicPath ? '/' : '');
 
-          this.emitFile(newFileName, result);
+            this.emitFile(newFileName, result);
 
-          result = `<${name} ${attrs
-            .map(i => {
-              if (isLink(i)) {
-                i.value = newUrl;
-              }
-              return `${i.name}="${i.value}"`;
-            })
-            .join(' ')} ></${name}>`;
+            result = `<${name} ${attrs
+              .map(i => {
+                if (isLink(i)) {
+                  i.value = newUrl;
+                }
+                return `${i.name}="${i.value}"`;
+              })
+              .join(' ')} ></${name}>`;
+          }
         }
         tag.code = result;
       }
