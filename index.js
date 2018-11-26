@@ -92,7 +92,7 @@ module.exports = async function(content) {
           const hash = Hash.digest('hex').substr(0, 6);
           const newFileName = `${path.basename(file).split('.')[0]}_${hash}${path.extname(file)}`;
 
-          const newUrl = [publicPath, newFileName].join('');
+          const newUrl = [publicPath.replace(/\/$/, ''), newFileName].join('/');
 
           this.emitFile(newFileName, buffer);
 
