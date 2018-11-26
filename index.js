@@ -4,7 +4,6 @@ const fs = require('fs-extra');
 const path = require('path');
 const loaderUtils = require('loader-utils');
 const queryParse = require('query-parse');
-const { transform } = require('@babel/core');
 const crypto = require('crypto');
 
 const attrParse = require('./lib/attributesParser');
@@ -14,27 +13,10 @@ const { SCRIPT } = require('./lib/const');
 module.exports = async function(content) {
   this.cacheable && this.cacheable();
   const callback = this.async();
-  const options = loaderUtils.getOptions(this) || {};
+  // const options = loaderUtils.getOptions(this) || {};
   const webpackConfig = this._compiler.parentCompilation.options;
   const { publicPath } = webpackConfig.output;
 
-  const babelOptions = {
-    minified: options.minimize,
-    presets: [
-      [
-        require('@babel/preset-env').default,
-        {
-          // no longer works with IE 9
-          targets: {
-            ie: 9,
-          },
-          // Users cannot override this behavior because this Babel
-          // configuration is highly tuned for ES5 support
-          ignoreBrowserslistConfig: true,
-        },
-      ],
-    ],
-  };
   const { resource } = this;
 
   const dir = path.dirname(resource);
@@ -61,40 +43,44 @@ module.exports = async function(content) {
         this.emitError(new Error(`not found file: ${temp[0]} \nin ${resource}`));
         tag.code = '';
       } else {
-        this.addDependency(file);
-        const buffer = await fs.readFile(file);
-        let result = '';
-        const isMiniFile = /\.min\.js$/.test(file);
-        const getJSCode = () => {
-          if (isMiniFile) {
-            return buffer.toString();
-          }
-          return transform(buffer, babelOptions).code;
-        };
+        const isMiniFile = /\.min\.(js|css)$/.test(file);
         const { name, attrs } = tag;
+        this.addDependency(file);
+        let result = '';
+        if (isMiniFile || isStyle(tag)) {
+          result = (await fs.readFile(file)).toString();
+        } else if (name === SCRIPT) {
+          // css 不支持，因为mini-css-extra-plugin/loader会出错！
+          result = await new Promise((resolve, reject) => {
+            this.loadModule(file, (err, source) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(source);
+              }
+            });
+          });
+        }
+
         // only js/css support inline
         if (query._inline) {
           if (name === SCRIPT) {
-            result = getJSCode();
             result = `<script>${result}</script>`;
           } else if (isStyle(tag)) {
-            result = `<style type="text/css" >${buffer}</style>`;
+            result = `<style type="text/css" >${result}</style>`;
           } else {
             this.emitWarning(`only js/css support inline:${JSON.stringify(tag, null, 2)}`);
             result = `<${name} ${attrs.map(i => `${i.name}="${i.value}"`).join(' ')}/>`;
           }
         } else {
-          if (tag.name === SCRIPT) {
-            result = getJSCode();
-          }
           const Hash = crypto.createHash('md5');
-          Hash.update(buffer);
+          Hash.update(result);
           const hash = Hash.digest('hex').substr(0, 6);
           const newFileName = `${path.basename(file).split('.')[0]}_${hash}${path.extname(file)}`;
 
           const newUrl = [publicPath.replace(/\/$/, ''), newFileName].join(publicPath ? '/' : '');
 
-          this.emitFile(newFileName, buffer);
+          this.emitFile(newFileName, result);
 
           result = `<${name} ${attrs
             .map(i => {
