@@ -5,6 +5,7 @@ const path = require('path');
 const loaderUtils = require('loader-utils');
 const queryParse = require('query-parse');
 const crypto = require('crypto');
+const { transform } = require('@babel/core');
 
 const attrParse = require('./lib/attributesParser');
 const { getLink, isLink, isStyle } = require('./lib/util');
@@ -13,7 +14,7 @@ const { SCRIPT } = require('./lib/const');
 module.exports = async function(content) {
   this.cacheable && this.cacheable();
   const callback = this.async();
-  // const options = loaderUtils.getOptions(this) || {};
+  const options = loaderUtils.getOptions(this) || {};
   const webpackConfig = this._compiler.parentCompilation.options;
   const { publicPath } = webpackConfig.output;
 
@@ -26,6 +27,24 @@ module.exports = async function(content) {
       return true;
     }
   });
+
+  const babelOptions = {
+    minified: options.minimize,
+    presets: [
+      [
+        require('@babel/preset-env').default,
+        {
+          // no longer works with IE 9
+          targets: {
+            ie: 9,
+          },
+          // Users cannot override this behavior because this Babel
+          // configuration is highly tuned for ES5 support
+          ignoreBrowserslistConfig: true,
+        },
+      ],
+    ],
+  };
 
   await Promise.all(
     tags.map(async tag => {
@@ -49,16 +68,15 @@ module.exports = async function(content) {
           const isMiniFile = /\.min\.(js|css)$/.test(file);
           const { name, attrs } = tag;
           this.addDependency(file);
-          if (isMiniFile || isStyle(tag)) {
-            result = (await fs.readFile(file)).toString();
-          } else if (name === SCRIPT) {
-            // css 不支持，因为mini-css-extra-plugin/loader会出错！
+          result = (await fs.readFile(file)).toString();
+          // 只需要转换未压缩的JS
+          if (!isMiniFile && name === SCRIPT) {
             result = await new Promise((resolve, reject) => {
-              this.loadModule(file, (err, source) => {
+              transform(result, babelOptions, (err, info) => {
                 if (err) {
                   reject(err);
                 } else {
-                  resolve(source);
+                  resolve(info.code);
                 }
               });
             });
