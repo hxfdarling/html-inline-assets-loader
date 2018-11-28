@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.1.1"></a>
+## [0.1.1](https://github.com/hxfdarling/html-inline-assets-loader/compare/v0.1.0...v0.1.1) (2018-11-28)
+
+
+### Bug Fixes
+
+* 修复使用webpack中的babel导致意外的require ([b49e95f](https://github.com/hxfdarling/html-inline-assets-loader/commit/b49e95f))
+
+
+
 <a name="0.1.0"></a>
 # [0.1.0](https://github.com/hxfdarling/html-inline-assets-loader/compare/v0.0.13...v0.1.0) (2018-11-26)
 
