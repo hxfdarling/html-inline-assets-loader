@@ -11,6 +11,7 @@ const attrParse = require('./lib/attributesParser');
 const { getLink, isLink, isStyle } = require('./lib/util');
 const { SCRIPT } = require('./lib/const');
 
+const varName = '__JS_RETRY__';
 module.exports = async function(content) {
   this.cacheable && this.cacheable();
   const callback = this.async();
@@ -98,7 +99,10 @@ module.exports = async function(content) {
             const newFileName = `${path.basename(file).split('.')[0]}_${hash}${path.extname(file)}`;
 
             const newUrl = [publicPath.replace(/\/$/, ''), newFileName].join(publicPath ? '/' : '');
-
+            if (name === SCRIPT) {
+              // 添加主域重试需要标记
+              result = `var ${varName}=${varName}||{};\n${varName}["${newFileName}"]=true;${result}`;
+            }
             this.emitFile(newFileName, result);
 
             result = `<${name} ${attrs
