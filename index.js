@@ -5,7 +5,8 @@ const path = require('path');
 const loaderUtils = require('loader-utils');
 const queryParse = require('query-parse');
 const crypto = require('crypto');
-const { transform } = require('@babel/core');
+const babel = require('./lib/babel');
+const cache = require('./lib/cache');
 
 const attrParse = require('./lib/attributesParser');
 const { getLink, isLink, isStyle } = require('./lib/util');
@@ -28,24 +29,6 @@ module.exports = async function(content) {
       return true;
     }
   });
-
-  const babelOptions = {
-    minified: options.minimize,
-    presets: [
-      [
-        require('@babel/preset-env').default,
-        {
-          // no longer works with IE 9
-          targets: {
-            ie: 9,
-          },
-          // Users cannot override this behavior because this Babel
-          // configuration is highly tuned for ES5 support
-          ignoreBrowserslistConfig: true,
-        },
-      ],
-    ],
-  };
 
   await Promise.all(
     tags.map(async tag => {
@@ -72,15 +55,19 @@ module.exports = async function(content) {
           result = (await fs.readFile(file)).toString();
           // 只需要转换未压缩的JS
           if (!isMiniFile && name === SCRIPT) {
-            result = await new Promise((resolve, reject) => {
-              transform(result, babelOptions, (err, info) => {
-                if (err) {
-                  reject(err);
-                } else {
-                  resolve(info.code);
-                }
+            if (options.cacheDirectory) {
+              result = await cache({
+                cacheDirectory: options.cacheDirectory,
+                options,
+                source: result,
+                // eslint-disable-next-line no-shadow
+                transform: (source, options) => {
+                  return babel(source, options);
+                },
               });
-            });
+            } else {
+              result = await babel(result, options);
+            }
           }
           // only js/css support inline
           if (inline) {
