@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.2.0"></a>
+# [0.2.0](https://github.com/hxfdarling/html-inline-assets-loader/compare/v0.1.2...v0.2.0) (2018-11-30)
+
+
+### Features
+
+* 支持缓存babel编译结果，加速构建 ([d75b1f7](https://github.com/hxfdarling/html-inline-assets-loader/commit/d75b1f7))
+
+
+
 <a name="0.1.2"></a>
 ## [0.1.2](https://github.com/hxfdarling/html-inline-assets-loader/compare/v0.1.1...v0.1.2) (2018-11-28)
 
