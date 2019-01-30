@@ -2,17 +2,16 @@
   "name": "html-inline-assets-loader",
   "version": "0.2.0",
   "description": "resolve assets in html file",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "directories": {
     "lib": "lib"
   },
   "files": [
-    "index.js",
     "lib"
   ],
   "scripts": {
     "test:w": "jest --watch",
-    "release": "standard-version",
+    "release": "npm run test && standard-version",
     "test": "jest"
   },
   "repository": {
@@ -40,10 +39,15 @@
     "@babel/preset-env": "^7.3.1",
     "babel-jest": "^24.0.0",
     "commitlint-config-imt": "^0.0.4",
+    "del": "^3.0.0",
     "eslint-config-zman": "^0.0.9",
+    "html-loader": "^0.5.5",
     "jest": "^24.0.0",
     "jest-extended": "^0.11.1",
-    "standard-version": "^4.4.0"
+    "memory-fs": "^0.4.1",
+    "standard-version": "^4.4.0",
+    "vm": "^0.1.0",
+    "webpack": "^4.29.0"
   },
   "config": {
     "commitizen": {

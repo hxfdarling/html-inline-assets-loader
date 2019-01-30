@@ -3,9 +3,9 @@ import 'jest-extended';
 
 const { compile, evaluated } = require('./helpers');
 
-describe('base loader', () => {
-  it('should compile with `js` entry point', async () => {
-    const stats = await compile('basic.js');
+describe('dist loader', () => {
+  it('在development模式下不引入', async () => {
+    const stats = await compile('dist.html');
 
     expect(stats.compilation.warnings).toBeArrayOfSize(0);
     expect(stats.compilation.errors).toBeArrayOfSize(0);
@@ -16,9 +16,10 @@ describe('base loader', () => {
     expect(evaluated(module.source, modules))
       .toMatchSnapshot('module (evaluated)');
   });
+  it('在production模式下引入', async () => {
+    process.env.NODE_ENV = 'production';
+    const stats = await compile('dist.html');
 
-  it('should compile with `html` entry point', async () => {
-    const stats = await compile('basic.html');
     expect(stats.compilation.warnings).toBeArrayOfSize(0);
     expect(stats.compilation.errors).toBeArrayOfSize(0);
 
