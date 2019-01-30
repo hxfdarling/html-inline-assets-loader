@@ -5,11 +5,12 @@ const path = require('path');
 const loaderUtils = require('loader-utils');
 const queryParse = require('query-parse');
 const crypto = require('crypto');
+const parse5 = require('parse5');
 const babel = require('./lib/babel');
 const cache = require('./lib/cache');
 
-const attrParse = require('./lib/attributesParser');
-const { getLink, isLink, isStyle } = require('./lib/util');
+const htmlParse = require('./lib/htmlParse');
+const { getLink, isLink, isStyle, isHtml } = require('./lib/util');
 const { SCRIPT } = require('./lib/const');
 
 const varName = '__JS_RETRY__';
@@ -21,18 +22,12 @@ module.exports = async function(content) {
   const { publicPath } = webpackConfig.output;
 
   const { resource } = this;
-
-  const dir = path.dirname(resource);
-  const tags = attrParse(content).filter(tag => {
-    const link = getLink(tag);
-    if (loaderUtils.isUrlRequest(link.value, dir)) {
-      return true;
-    }
-  });
+  const baseDir = path.dirname(resource);
+  const { root, list: nodes } = htmlParse(content);
 
   await Promise.all(
-    tags.map(async tag => {
-      const link = getLink(tag);
+    nodes.map(async node => {
+      const link = getLink(node);
       const temp = link.value.split('?');
       const query = queryParse.toObject(temp[1] || '');
       Object.keys(query).forEach(key => {
@@ -40,21 +35,20 @@ module.exports = async function(content) {
           query[key] = true;
         }
       });
-      const file = path.resolve(dir, temp[0]);
+      const file = path.resolve(baseDir, temp[0]);
       if (!fs.existsSync(file)) {
         this.emitError(new Error(`not found file: ${temp[0]} \nin ${resource}`));
-        tag.code = '';
       } else {
         const { _inline: inline, _dist: dist } = query;
         let result = '';
         const needInclude = !dist || (dist && process.env.NODE_ENV === 'production');
         if (needInclude) {
           const isMiniFile = /\.min\.(js|css)$/.test(file);
-          const { name, attrs } = tag;
+          const { nodeName } = node;
           this.addDependency(file);
           result = (await fs.readFile(file)).toString();
           // 只需要转换未压缩的JS
-          if (!isMiniFile && name === SCRIPT) {
+          if (!isMiniFile && nodeName === SCRIPT) {
             if (options.cacheDirectory) {
               result = await cache({
                 cacheDirectory: options.cacheDirectory,
@@ -69,15 +63,27 @@ module.exports = async function(content) {
               result = await babel(result, options);
             }
           }
-          // only js/css support inline
-          if (inline) {
-            if (name === SCRIPT) {
-              result = `<script>${result}</script>`;
-            } else if (isStyle(tag)) {
-              result = `<style type="text/css" >${result}</style>`;
+          // only js/css/html support inline
+          if (inline || isHtml(node)) {
+            if (nodeName === SCRIPT) {
+              node.attrs = [];
+              node.childNodes = [{ nodeName: '#text', value: result, parentNode: node }];
+            } else if (isStyle(node)) {
+              node.nodeName = 'style';
+              node.tagName = 'style';
+              node.attrs = [{ name: 'type', value: 'text/css' }];
+              node.childNodes = [{ nodeName: '#text', value: result, parentNode: node }];
+            } else if (isHtml(node)) {
+              const htmlDom = parse5.parseFragment(result);
+              const { childNodes } = node.parentNode;
+              childNodes.splice(childNodes.indexOf(node), 1, ...htmlDom.childNodes);
             } else {
-              this.emitWarning(`only js/css support inline:${JSON.stringify(tag, null, 2)}`);
-              result = `<${name} ${attrs.map(i => `${i.name}="${i.value}"`).join(' ')}/>`;
+              const msg = `\nonly js/css support inline:${JSON.stringify(
+                { tagName: node.tagName, attrs: node.attrs },
+                null,
+                2
+              )}`;
+              this.emitWarning(msg);
             }
           } else {
             const Hash = crypto.createHash('md5');
@@ -86,37 +92,28 @@ module.exports = async function(content) {
             const newFileName = `${path.basename(file).split('.')[0]}_${hash}${path.extname(file)}`;
 
             const newUrl = [publicPath.replace(/\/$/, ''), newFileName].join(publicPath ? '/' : '');
-            if (name === SCRIPT) {
+            if (nodeName === SCRIPT) {
               // 添加主域重试需要标记
               result = `var ${varName}=${varName}||{};\n${varName}["${newFileName}"]=true;${result}`;
             }
             this.emitFile(newFileName, result);
 
-            result = `<${name} ${attrs
-              .map(i => {
-                if (isLink(i)) {
-                  i.value = newUrl;
-                }
-                return `${i.name}="${i.value}"`;
-              })
-              .join(' ')} ></${name}>`;
+            node.attrs = node.attrs.map(i => {
+              if (isLink(i)) {
+                i.value = newUrl;
+              }
+              return i;
+            });
           }
+        } else {
+          const { childNodes } = node.parentNode;
+          childNodes.splice(childNodes.indexOf(node), 1);
         }
-        tag.code = result;
       }
     })
   );
 
-  tags.reverse();
-  content = [content];
-  tags.forEach(tag => {
-    const x = content.pop();
-    content.push(x.substr(tag.end));
-    content.push(tag.code);
-    content.push(x.substr(0, tag.start));
-  });
-  content.reverse();
-  content = content.join('');
+  content = parse5.serialize(root);
 
   callback(null, content);
 };

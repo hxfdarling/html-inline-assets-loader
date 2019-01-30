@@ -6,9 +6,14 @@
   "directories": {
     "lib": "lib"
   },
+  "files": [
+    "index.js",
+    "lib"
+  ],
   "scripts": {
+    "test:w": "jest --watch",
     "release": "standard-version",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -21,20 +26,23 @@
   },
   "homepage": "https://github.com/hxfdarling/html-inline-assets-loader#readme",
   "dependencies": {
-    "@babel/core": "^7.1.6",
-    "@babel/preset-env": "^7.1.6",
-    "fastparse": "^1.1.2",
     "find-cache-dir": "^2.0.0",
     "fs-extra": "^7.0.1",
     "loader-utils": "^1.1.0",
     "mkdirp": "^0.5.1",
+    "parse5": "^5.1.0",
     "query-parse": "^2.0.0",
     "util.promisify": "^1.0.0",
     "zlib": "^1.0.5"
   },
   "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "babel-jest": "^24.0.0",
     "commitlint-config-imt": "^0.0.4",
     "eslint-config-zman": "^0.0.9",
+    "jest": "^24.0.0",
+    "jest-extended": "^0.11.1",
     "standard-version": "^4.4.0"
   },
   "config": {
