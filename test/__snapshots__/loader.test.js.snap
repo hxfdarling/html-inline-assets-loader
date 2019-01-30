@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`base loader should compile with \`html\` entry point: module (evaluated) 1`] = `
+"<!DOCTYPE html><html><head>
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+    <meta charset=\\"utf-8\\">
+    <meta name=\\"format-detection\\" content=\\"telephone=no\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no\\">
+    <title>imt application</title>
+  </head>
+
+  <body>
+
+</body></html>"
+`;
+
+exports[`base loader should compile with \`html\` entry point: module 1`] = `"module.exports = \\"<!DOCTYPE html><html><head>\\\\n    <meta http-equiv=\\\\\\"X-UA-Compatible\\\\\\" content=\\\\\\"IE=edge\\\\\\">\\\\n    <meta charset=\\\\\\"utf-8\\\\\\">\\\\n    <meta name=\\\\\\"format-detection\\\\\\" content=\\\\\\"telephone=no\\\\\\">\\\\n    <meta name=\\\\\\"viewport\\\\\\" content=\\\\\\"width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no\\\\\\">\\\\n    <title>imt application</title>\\\\n  </head>\\\\n\\\\n  <body>\\\\n\\\\n</body></html>\\";"`;
+
+exports[`base loader should compile with \`js\` entry point: module (evaluated) 1`] = `
+"<!DOCTYPE html><html><head>
+    <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\">
+    <meta charset=\\"utf-8\\">
+    <meta name=\\"format-detection\\" content=\\"telephone=no\\">
+    <meta name=\\"viewport\\" content=\\"width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no\\">
+    <title>imt application</title>
+  </head>
+
+  <body>
+
+</body></html>"
+`;
+
+exports[`base loader should compile with \`js\` entry point: module 1`] = `"module.exports = \\"<!DOCTYPE html><html><head>\\\\n    <meta http-equiv=\\\\\\"X-UA-Compatible\\\\\\" content=\\\\\\"IE=edge\\\\\\">\\\\n    <meta charset=\\\\\\"utf-8\\\\\\">\\\\n    <meta name=\\\\\\"format-detection\\\\\\" content=\\\\\\"telephone=no\\\\\\">\\\\n    <meta name=\\\\\\"viewport\\\\\\" content=\\\\\\"width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no\\\\\\">\\\\n    <title>imt application</title>\\\\n  </head>\\\\n\\\\n  <body>\\\\n\\\\n</body></html>\\";"`;
