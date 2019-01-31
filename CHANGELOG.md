@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/hxfdarling/html-inline-assets-loader/compare/v0.2.0...v0.3.0) (2019-01-31)
+
+
+### Bug Fixes
+
+* 修复bug，添加图片处理 ([b726231](https://github.com/hxfdarling/html-inline-assets-loader/commit/b726231))
+
+
+### Features
+
+* 添加测试用例 ([d4ab525](https://github.com/hxfdarling/html-inline-assets-loader/commit/d4ab525))
+
+
+
 <a name="0.2.0"></a>
 # [0.2.0](https://github.com/hxfdarling/html-inline-assets-loader/compare/v0.1.2...v0.2.0) (2018-11-30)
 
